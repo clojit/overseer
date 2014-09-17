@@ -29,11 +29,12 @@
      :throw-exceptions false}
     :query-params qps)))
 
-(def server (start-api {:index (atom 0)
+#_(def server (start-api {:index (atom 0)
                         :bcinit (atom {})}
                        {:port +port+ :join? false}))
 
-(def bc1 {:CSTR ["t" "f"],
+(def bc1
+{:CSTR ["t" "f"],
  :CKEY [],
  :CINT [99 1 2 3],
  :CFLOAT [],
@@ -64,8 +65,8 @@
 
 
 
-(clojure.pprint/pprint (http-post "bcinit" bc1))
+#_(clojure.pprint/pprint (http-post "bcinit" bc1))
 
-(clojure.pprint/pprint (http-get "bcinit"))
+#_(clojure.pprint/pprint (http-get "bcinit"))
 
-(.stop server)
+#_(.stop server)
