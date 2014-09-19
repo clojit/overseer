@@ -10,7 +10,10 @@ Start Server:
 
 lein run
 
+
 lein run *port*
+
+
 
 Post Data:
 ----------------
@@ -22,6 +25,9 @@ Browse to:
 ----------------
 
 http://localhost:9090/overseer/bcinit/
+
+
+
 http://localhost:9090/overseer/bcinit/*index*
 
 
