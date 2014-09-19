@@ -44,3 +44,12 @@
   (-> resources
       wrapped-root-handler
       (jetty/run-jetty options)))
+
+
+(defn -main
+  ([]
+   (-main "9090"))
+  ([port]
+   (start-api {:index (atom 0)
+               :bcinit (atom {})}
+              {:port (Integer/parseInt port) :join? false})))

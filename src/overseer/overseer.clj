@@ -58,19 +58,38 @@
                  (k func-map))]]])
        func-map))
 
-(defn bc-output [bcinit]
-  (h/html
-   [:div {:float "left"}
+(defn render-bc-fn [single-bc]
+  [:div
+   [:code
+    [:table {:border 0}
+     (render-bc-list (:CFUNC single-bc))]]])
+
+(defn render-constant-table [single-bc pos]
+  [:div {:style (str "position:" pos ";top:1em;right:1em;")}
+   [:table {:width t-width :border 0}
     [:code
-     [:table  {:border 1}
-      (render-bc-list (:CFUNC (bcinit 1)))]]]
-   [:div {:style (str "position:fixed;top:1em;right:1em;")}
-    [:table {:width t-width :border 1}
-     [:code
-      (map constant-view
-           ["CSTR" "CKEY" "CFLOAT" "CINT"]
-           ["819FF7" "58FA58" "FE642E" "FE2E64"]
-           (repeat (bcinit 1)))]]]))
+     (map constant-view
+          ["CSTR" "CKEY" "CFLOAT" "CINT"]
+          ["819FF7" "58FA58" "FE642E" "FE2E64"]
+          (repeat single-bc))]]])
+
+(defn bc-output-table [[bc-k single-bc]]
+  [:table {:border 0}
+   [:tr [:th (str bc-k)]]
+   [:tr
+    [:td
+     (render-bc-fn single-bc)]
+    [:td
+     (render-constant-table single-bc "float")]]])
+
+(defn single-bc-input-sepc [bcinit index]
+  (let [single-bc (safe-get bcinit index)]
+    [:div
+     (render-bc-fn single-bc)
+     (render-constant-table single-bc "fixed" )]))
+
+(defn full-bc [bcinit]
+  (map bc-output-table bcinit))
 
 (defnk $bcinit$POST
   "Add a new bc file"
@@ -80,12 +99,24 @@
   (let [entry-id (swap! index inc)
         indexed-entry (assoc body :index entry-id)]
     (swap! bcinit assoc entry-id indexed-entry)
-    {:body (bc-output indexed-entry)}))
+    {:body {:index entry-id} #_(bc-output indexed-entry)}))
 
 (defnk $bcinit$GET
   "View the current entries in the guestbook"
-  {:responses {200 [s/Any]}}
+  {:responses {200 s/Any}}
   [[:resources bcinit]]
-  {:body (bc-output @bcinit)})
+  {:body (h/html
+          (let [html-output (full-bc @bcinit)]
+            (if (= "Not found." html-output)
+              "No Data"
+              html-output)))})
 
 
+(defnk $bcinit$:index$GET
+  "Get the entry at the given id"
+  {:responses {200 s/Any}}
+  [[:request [:uri-args index :- Long]]
+   [:resources bcinit]]
+  {:body #_(str (class index))
+   (h/html
+          (single-bc-input-sepc @bcinit (Integer/parseInt index)))})
