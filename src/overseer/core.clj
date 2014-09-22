@@ -15,7 +15,8 @@
    [fnhouse.routes :as routes]
    [overseer.overseer :as overseer]
    [overseer.ring :as ring]
-   [overseer.schemas :as schemas]))
+   [overseer.schemas :as schemas])
+  (:gen-class))
 
 (defn attach-docs [resources prefix->ns-sym]
   (let [proto-handlers (-> prefix->ns-sym
