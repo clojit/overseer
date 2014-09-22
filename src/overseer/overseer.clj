@@ -5,6 +5,7 @@
    [schema.core :as s]
    [clojure.string :as str]
    [overseer.schemas :as schemas]
+   [clojure.data.json :as json]
    [hiccup.core :as h]))
 
 (def const-table-color {"CSTR" "819FF7"
@@ -16,14 +17,13 @@
 
 (defn constant-view [k c bcinit]
   (let [key (keyword k)]
-    [:tr
-     [:td {:style (str "background-color:#" c ";display:inline-block")}
-         [:h4 k]
-         [:table {:width t-width :border 1}
-          (map (fn [str-const i]
-                 [:tr [:td i] [:td str-const]])
-               (key bcinit)
-               (range))]]]))
+    [:td {:style (str "background-color:#" c ";display:inline-block")}
+     [:h4 k]
+     [:table {:width t-width :border 0}
+      (map (fn [str-const i]
+             [:tr [:td i] [:td str-const]])
+           (key bcinit)
+           (range))]]))
 
 (defn rand-color []
   (let [digit (vec  (concat (map str (range 10)) ["A" "B" "C" "D" "E" "F"]))]
@@ -67,7 +67,7 @@
 (defn render-constant-table [single-bc pos]
   [:div {:style (str "position:" pos ";top:1em;right:1em;")}
    [:table {:width t-width :border 0}
-    [:code
+    [:tr
      (map constant-view
           ["CSTR" "CKEY" "CFLOAT" "CINT"]
           ["819FF7" "58FA58" "FE642E" "FE2E64"]
@@ -94,12 +94,12 @@
 (defnk $bcinit$POST
   "Add a new bc file"
   {:responses {200 s/Any}}
-  [[:request body :- s/Any]
+  [[:request body :- schemas/Bytecode-Input-Data]
    [:resources bcinit index]]
   (let [entry-id (swap! index inc)
         indexed-entry (assoc body :index entry-id)]
     (swap! bcinit assoc entry-id indexed-entry)
-    {:body {:index entry-id} #_(bc-output indexed-entry)}))
+    {:body (@bcinit entry-id) #_(json/write-str {@bcinit entry-id})}))
 
 (defnk $bcinit$GET
   "View the current entries in the guestbook"
@@ -107,16 +107,12 @@
   [[:resources bcinit]]
   {:body (h/html
           (let [html-output (full-bc @bcinit)]
-            (if (= "Not found." html-output)
-              "No Data"
-              html-output)))})
-
+            html-output))})
 
 (defnk $bcinit$:index$GET
   "Get the entry at the given id"
   {:responses {200 s/Any}}
   [[:request [:uri-args index :- Long]]
    [:resources bcinit]]
-  {:body #_(str (class index))
-   (h/html
+  {:body (h/html
           (single-bc-input-sepc @bcinit (Integer/parseInt index)))})

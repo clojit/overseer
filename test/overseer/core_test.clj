@@ -7,33 +7,6 @@
    [clojure.data.json :as json]
    [overseer.schemas :as schemas]))
 
-(def +port+
-  "A random port on which to host the service"
-  9090)
-
-(def +base-url+
-  (format "http://localhost:%s/overseer/" +port+))
-
-(defn http-post [url body]
-  (client/post
-   (str +base-url+ url)
-   {:content-type :json
-    :as :json
-    :throw-exceptions false
-    :body (cheshire/generate-string body)}))
-
-(defn http-get [url & [qps]]
-  (client/get
-   (str +base-url+ url)
-   (assoc-when
-    {:as :json
-     :throw-exceptions false}
-    :query-params qps)))
-
-#_(def server (start-api {:index (atom 0)
-                        :bcinit (atom {})}
-                       {:port +port+ :join? false}))
-
 (def bc1
 {:CSTR ["t" "f"],
  :CKEY [:test :ckey :my-keytest],
@@ -45,7 +18,7 @@
    {:op :NSSETS, :a 0, :d 0}
    {:op :CFUNC, :a 0, :d 6002}
    {:op :NSSETS, :a 0, :d 1}
-   {:op :CINT, :a 0, :d 1}DVV", "a" 0, "b" 0, "c" 1} {"op" "CINT", "a" 1, "d" 3} {"op" "ADDVV", "a" 0, "b" 0, "c" 1} {"op" "NSGETS", "a" 2, "d" 0} {"op" "CFUNC", "a" 0, "d" 6002} {"op" "NSSETS", "a" 0, "d" 1} {"op" "CINT", "a" 0, "d" 1} {"op" "CINT", "a" 1, "d" 2} {"op" "ADDVV", "a" 0, "b" 0, "c" 1} {"op" "CINT", "a" 1, "d" 3} {"op" "ADDVV", "a" 0, "b" 0, "c" 1} {"op" "NSGETS", "a" 2, "d" 0} {"op" "ADDVV", "a" 0, "b" 0, "c" 1} {"op" "CINT", "a" 1, "d" 3} {"op" "ADDVV", "a" 0, "b" 0, "c" 1} {"op" "NSGETS", "a" 2, "d" 0} {"op" "CALL", "a" 2, "d" 0} {"op" "ADDVV", "a" 0, "b" 0, "c" 1}], "6001" [{"op" "FUNCV", "a" 0, "d" nil} {"op" "CINT", "a" 1, "d" 0} {"op" "RET", "a" 1, "d" nil} {"op" "MOV", "a" 4, "d" 0} {"o
+   {:op :CINT, :a 0, :d 1}
    {:op :CINT, :a 1, :d 2}
    {:op :CFUNC, :a 0, :d 6002}
    {:op :NSSETS, :a 0, :d 1}
@@ -99,16 +72,58 @@
    {:op :CINT, :a 1, :d 0}
    {:op :RET, :a 1, :d nil}]}})
 
-#_(clojure.pprint/pprint (http-post "bcinit" bc1))
+(def +port+
+  "A random port on which to host the service"
+  9090)
+
+(def +base-url+
+  (format "http://localhost:%s/overseer/" +port+))
+
+(defn http-post [url body]
+  (client/post
+   (str +base-url+ url)
+   {:content-type :json
+    :as :json
+    :throw-exceptions false
+    :body body}))
+
+(defn http-get [url & [qps]]
+  (client/get
+   (str +base-url+ url)
+   (assoc-when
+    {:as :json
+     :throw-exceptions false}
+    :query-params qps)))
+
+(defn bc-post [complet-bc]
+  (let [s-valid (s/validate schemas/Bytecode-Output-Data complet-bc)]
+    (http-post "bcinit" (json/write-str s-valid))))
+
+#_(def server (start-api {:index (atom 0)
+                        :bcinit (atom {})}
+                       {:port +port+ :join? false}))
+
+#_(.stop server)
+
+#_(def a (bc-post bc1))
+
+#_(clojure.pprint/pprint (:body a))
+
+#_(s/validate schemas/Bytecode-Output-Data bc1)
+
+#_(s/validate schemas/Bytecode-Input-Data (json/read-str (json/write-str bc1)))
+
+
+
+#_(json/pprint (json/read-str (json/write-str bc1)))
 
 #_(clojure.pprint/pprint (http-get "bcinit"))
 
 #_(.stop server)
 
+#_(  (read-string (slurp "examplepost.txt")))
 
-(  (read-string (slurp "examplepost.txt")))
-
-(json/read-str (cheshire/generate-string bc1))
+#_(json/read-str (cheshire/generate-string bc1))
 
 
 
