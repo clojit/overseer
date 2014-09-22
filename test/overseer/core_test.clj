@@ -11,7 +11,7 @@
 {:CSTR ["t" "f"],
  :CKEY [:test :ckey :my-keytest],
  :CINT [99 1 2 3],
- :CFLOAT [1.6 9.0 6.0],
+ :CFLOAT [1.6 9.0 6.0 1.6 9.0 6.0 1.6 9.0 6.0 1.6 9.0 6.0]
  :CFUNC
  {0
   [{:op :CFUNC, :a 0, :d 6001}
@@ -99,11 +99,11 @@
   (let [s-valid (s/validate schemas/Bytecode-Output-Data complet-bc)]
     (http-post "bcinit" (json/write-str s-valid))))
 
+#_(.stop server)
+
 #_(def server (start-api {:index (atom 0)
                         :bcinit (atom {})}
                        {:port +port+ :join? false}))
-
-#_(.stop server)
 
 #_(def a (bc-post bc1))
 

@@ -13,23 +13,22 @@
                         "CFLOAT" "FE642E"
                         "CINT"  "FE2E64"})
 
-(def t-width 300)
-
-(defn constant-view [k c bcinit]
-  (let [key (keyword k)]
-    [:td {:style (str "background-color:#" c ";display:inline-block")}
-     [:h4 k]
-     [:table {:width t-width :border 0}
-      (map (fn [str-const i]
-             [:tr [:td i] [:td str-const]])
-           (key bcinit)
-           (range))]]))
+(def t-width 250)
 
 (defn rand-color []
   (let [digit (vec  (concat (map str (range 10)) ["A" "B" "C" "D" "E" "F"]))]
     (str "#"
          (apply str (take 6 (repeatedly #(rand-nth digit)))))))
 
+(defn constant-view [k c bcinit]
+  (let [key (keyword k)]
+    [:td {:style (str "background-color:#" c ";display:inline-block;vertical-align:top;")}
+     [:h4 {:style "font-size:55%;margin:0;padding:0;"} k]
+     [:table {:width t-width :style "font-size:50%;margin:0;padding:0;"}
+      (map (fn [str-const i]
+             [:tr [:td {:style "border-bottom:solid 1px" } i] [:td {:style "border-bottom:solid 1px" } str-const]])
+           (key bcinit)
+           (range))]]))
 
 (defn add-bg-for-consttable [html-element bc]
     (if (some #{(str (:op bc))} (vec (keys const-table-color)))
@@ -65,8 +64,8 @@
      (render-bc-list (:CFUNC single-bc))]]])
 
 (defn render-constant-table [single-bc pos]
-  [:div {:style (str "position:" pos ";top:1em;right:1em;")}
-   [:table {:width t-width :border 0}
+  [:div {:style (str "position:" pos ";top:1em;right:1em;box-sizing:border-box;margin:0;padding:0;")}
+   [:table {:border 0}
     [:tr
      (map constant-view
           ["CSTR" "CKEY" "CFLOAT" "CINT"]
@@ -99,7 +98,7 @@
   (let [entry-id (swap! index inc)
         indexed-entry (assoc body :index entry-id)]
     (swap! bcinit assoc entry-id indexed-entry)
-    {:body (@bcinit entry-id) #_(json/write-str {@bcinit entry-id})}))
+    {:body (@bcinit entry-id)}))
 
 (defnk $bcinit$GET
   "View the current entries in the guestbook"
